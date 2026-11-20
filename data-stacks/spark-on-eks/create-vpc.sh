@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Creates the VPC layout for the spark-on-eks stack; every resource name starts with PREFIX (default "fs-").
 # Override with: PREFIX=abc- ./create-vpc.sh   (use the same PREFIX for deploy.sh). IPv6 /64s are derived from the Amazon-assigned /56.
-# Deletes any existing VPC with the same Name tag first.
+# Deletes any existing VPC with the same Name tag first, then create a new one.
 set -euo pipefail
 
 REGION=us-west-2
