@@ -12,10 +12,11 @@ spec:
   # IAM role for Karpenter nodes - from EKS module output
   role: "${KARPENTER_NODE_IAM_ROLE_NAME}"
 
-  # Subnet selection - private secondary subnets
+  # Subnet selection - node subnets by ID (local.node_subnet_ids)
   subnetSelectorTerms:
-    - tags:
-        Name: "${CLUSTER_NAME}-private-secondary*"
+%{ for id in NODE_SUBNET_IDS ~}
+    - id: "${id}"
+%{ endfor ~}
 
   # Security group selection - use the node security group
   securityGroupSelectorTerms:
@@ -90,10 +91,11 @@ spec:
   # IAM role for Karpenter nodes - from EKS module output
   role: "${KARPENTER_NODE_IAM_ROLE_NAME}"
 
-  # Subnet selection - private secondary subnets
+  # Subnet selection - node subnets by ID (local.node_subnet_ids)
   subnetSelectorTerms:
-    - tags:
-        Name: "${CLUSTER_NAME}-private-secondary*"
+%{ for id in NODE_SUBNET_IDS ~}
+    - id: "${id}"
+%{ endfor ~}
 
   # Security group selection - use the node security group
   securityGroupSelectorTerms:
@@ -166,10 +168,11 @@ spec:
   # IAM role for Karpenter nodes - from EKS module output
   role: "${KARPENTER_NODE_IAM_ROLE_NAME}"
 
-  # Subnet selection - private secondary subnets
+  # Subnet selection - node subnets by ID (local.node_subnet_ids)
   subnetSelectorTerms:
-    - tags:
-        Name: "${CLUSTER_NAME}-private-secondary*"
+%{ for id in NODE_SUBNET_IDS ~}
+    - id: "${id}"
+%{ endfor ~}
 
   # Security group selection - use the node security group
   securityGroupSelectorTerms:
@@ -301,10 +304,11 @@ spec:
   # IAM role for Karpenter nodes - from EKS module output
   role: "${KARPENTER_NODE_IAM_ROLE_NAME}"
 
-  # Subnet selection - private secondary subnets
+  # Subnet selection - node subnets by ID (local.node_subnet_ids)
   subnetSelectorTerms:
-    - tags:
-        Name: "${CLUSTER_NAME}-private-secondary*"
+%{ for id in NODE_SUBNET_IDS ~}
+    - id: "${id}"
+%{ endfor ~}
 
   # Security group selection - use the node security group
   securityGroupSelectorTerms:
@@ -362,10 +366,11 @@ spec:
   # IAM role for Karpenter nodes - from EKS module output
   role: "${KARPENTER_NODE_IAM_ROLE_NAME}"
 
-  # Subnet selection - private secondary subnets
+  # Subnet selection - node subnets by ID (local.node_subnet_ids)
   subnetSelectorTerms:
-    - tags:
-        Name: "${CLUSTER_NAME}-private-secondary*"
+%{ for id in NODE_SUBNET_IDS ~}
+    - id: "${id}"
+%{ endfor ~}
 
   # Security group selection - use the node security group
   securityGroupSelectorTerms:
@@ -424,10 +429,11 @@ spec:
   # IAM role for Karpenter nodes - from EKS module output
   role: "${KARPENTER_NODE_IAM_ROLE_NAME}"
 
-  # Subnet selection - private secondary subnets
+  # Subnet selection - node subnets by ID (local.node_subnet_ids)
   subnetSelectorTerms:
-    - tags:
-        Name: "${CLUSTER_NAME}-private-secondary*"
+%{ for id in NODE_SUBNET_IDS ~}
+    - id: "${id}"
+%{ endfor ~}
 
   # Security group selection - use the node security group
   securityGroupSelectorTerms:
@@ -514,10 +520,11 @@ spec:
   # IAM role for Karpenter nodes - from EKS module output
   role: "${KARPENTER_NODE_IAM_ROLE_NAME}"
 
-  # Subnet selection - private secondary subnets
+  # Subnet selection - node subnets by ID (local.node_subnet_ids)
   subnetSelectorTerms:
-    - tags:
-        Name: "${CLUSTER_NAME}-private-secondary*"
+%{ for id in NODE_SUBNET_IDS ~}
+    - id: "${id}"
+%{ endfor ~}
 
   # Security group selection - use the node security group
   securityGroupSelectorTerms:
@@ -595,10 +602,11 @@ spec:
   amiSelectorTerms:
     - alias: al2023@latest
   role: "${KARPENTER_NODE_IAM_ROLE_NAME}"
-  # Subnet selection - private secondary subnets
+  # Subnet selection - node subnets by ID (local.node_subnet_ids)
   subnetSelectorTerms:
-    - tags:
-        Name: "${CLUSTER_NAME}-private-secondary*"
+%{ for id in NODE_SUBNET_IDS ~}
+    - id: "${id}"
+%{ endfor ~}
   securityGroupSelectorTerms:
     - tags:
         Name: "${CLUSTER_NAME}-node"

@@ -39,10 +39,8 @@ module "eks" {
   create_cni_ipv6_iam_policy = var.enable_ipv6
 
   vpc_id = module.vpc.vpc_id
-  # Filtering only Secondary CIDR private subnets starting with "100.". Subnet IDs where the EKS Control Plane ENIs will be created
-  subnet_ids = compact([for subnet_id, cidr_block in zipmap(module.vpc.private_subnets, module.vpc.private_subnets_cidr_blocks) :
-    substr(cidr_block, 0, 4) == "100." ? subnet_id : null]
-  )
+  # Node subnets (defined in vpc.tf). Subnet IDs where the EKS Control Plane ENIs will be created
+  subnet_ids = local.node_subnet_ids
 
   # Combine root account, current user/role and additional roles to be able to access the cluster KMS key - required for terraform updates
   kms_key_administrators = distinct(concat([

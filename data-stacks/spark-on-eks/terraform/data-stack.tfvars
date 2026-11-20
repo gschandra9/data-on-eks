@@ -1,13 +1,14 @@
 # Checkout the docs for enabling more addons
 # https://awslabs.github.io/data-on-eks/docs/datastacks/processing/spark-on-eks/infra
 
-name                 = "spark-on-eks"
+# name is set by deploy.sh/cleanup.sh as TF_VAR_name="${PREFIX}spark-on-eks" (do not set it here: -var-file overrides TF_VAR_*)
 region               = "us-west-2"
 enable_ingress_nginx = true
 # Unique ID used to tag all AWS resources for this deployment.
 # Enables identification of orphaned resources and cleanup in case of Terraform state loss.
 # Auto-generated on first deploy — do not edit manually.
 deployment_id              = ""
+# VPC settings (vpc_mode, vpc_id, subnet IDs, CIDRs) come from deploy.sh --vpc-mode/--vpc-config. Do not set them here.
 enable_celeborn            = false
 # Static Karpenter NodePools (spec.replicas), used by the TPC-DS benchmarks for fixed capacity
 enable_karpenter_static_capacity = true

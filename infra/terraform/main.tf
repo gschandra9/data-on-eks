@@ -48,9 +48,7 @@ locals {
       partition   = local.partition
       account_id  = local.account_id
       description = "EKS Core node group for hosting system add-ons"
-      subnet_ids = compact([for subnet_id, cidr_block in zipmap(module.vpc.private_subnets, module.vpc.private_subnets_cidr_blocks) :
-        substr(cidr_block, 0, 4) == "100." ? subnet_id : null]
-      )
+      subnet_ids   = local.node_subnet_ids
       ami_type     = "AL2023_x86_64_STANDARD"
       min_size     = 4
       max_size     = 8

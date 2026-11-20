@@ -2,6 +2,13 @@ data "aws_availability_zones" "available" {}
 
 locals {
   azs = slice(data.aws_availability_zones.available.names, 0, 3)
+
+  # Subnets for the EKS control plane ENIs, core node group and Karpenter nodes:
+  # the private subnets carved from var.secondary_cidrs.
+  node_subnet_ids = [
+    for i, id in module.vpc.private_subnets : id
+    if contains(var.secondary_cidrs, module.vpc.private_subnets_cidr_blocks[i])
+  ]
 }
 
 #---------------------------------------------------------------

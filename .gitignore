@@ -70,3 +70,8 @@ node_modules
 gen-ai/inference/stable-diffusion-rayserve-gpu/locust/__pycache__/*
 website/package-lock.json
 website/package.json
+
+# spark-on-eks deploy.sh saved settings (per deployment)
+.deploy-params.env
+# spark-on-eks VPC configs (account-specific VPC/subnet IDs)
+data-stacks/spark-on-eks/vpc*.json

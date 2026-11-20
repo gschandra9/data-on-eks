@@ -12,6 +12,7 @@ locals {
     templatefile("${path.module}/manifests/karpenter/ec2nodeclass.yaml", {
       CLUSTER_NAME                 = local.name
       KARPENTER_NODE_IAM_ROLE_NAME = module.karpenter.node_iam_role_name
+      NODE_SUBNET_IDS              = local.node_subnet_ids
     })
   )
 }
