@@ -2,9 +2,9 @@
 
 Changes made so the `spark-on-eks` stack can deploy into an existing VPC that has no direct internet
 access (egress only through a proxy). Each bullet is one change: what it was before, what it is now,
-and the files it touches. A masked sample config is in `vpc.json` at the repository root.
+and the files it touches. A masked sample config is in `data-stacks/spark-on-eks/vpc.json`.
 
-## A. Existing-VPC support (commits `ff124049` and `ea819773`)
+## A. Existing-VPC support (commits `ff124049` and `ea819773`; item 3 partly reverted later)
 
 1. Deploy into a new OR an existing VPC, selected by `--vpc-mode create|existing` and a `--vpc-config` JSON file.
    - Before: the stack always created its own VPC.
@@ -18,11 +18,11 @@ and the files it touches. A masked sample config is in `vpc.json` at the reposit
    - After: `--prefix` on `deploy.sh` flows into `var.name`.
    - Files: `data-stacks/spark-on-eks/deploy.sh`
 
-3. Helper scripts to create and delete a sample VPC layout for testing existing mode.
-   - Before: none.
-   - After: `create-vpc.sh` builds a VPC (primary + secondary CIDRs, public/private subnets, NAT, IGW, IPv6);
-     `delete-vpc.sh` tears it down.
-   - Files: `data-stacks/spark-on-eks/create-vpc.sh`, `data-stacks/spark-on-eks/delete-vpc.sh`, `data-stacks/spark-on-eks/cleanup.sh`, `.gitignore`
+3. Helper scripts `create-vpc.sh` / `delete-vpc.sh` (create and tear down a sample VPC for testing existing mode).
+   - Added in `ff124049`, later **removed from the repository** (kept locally only, git-ignored). Existing mode works with
+     any VPC described in the `--vpc-config` file; see the masked sample `data-stacks/spark-on-eks/vpc.json`.
+   - Files: `data-stacks/spark-on-eks/create-vpc.sh` (removed), `data-stacks/spark-on-eks/delete-vpc.sh` (removed),
+     `.gitignore`
 
 ## B. Deploy into an existing VPC without direct internet access (commit `baa4a4a6`)
 
@@ -133,8 +133,9 @@ and the files it touches. A masked sample config is in `vpc.json` at the reposit
 
 ## Notes
 
-- `vpc.json` (root) uses masked example IDs. The real config lives in `data-stacks/spark-on-eks/vpc.json`, which is
-  git-ignored because it contains account-specific IDs.
+- `data-stacks/spark-on-eks/vpc.json` is a masked sample (example IDs). Keep the real config under another `vpc*.json` name in the
+  same folder (for example `vpc-fs.json`): those are git-ignored because they contain account-specific IDs. Deploy with
+  `./deploy.sh --prefix fs- --vpc-mode existing --vpc-config vpc-fs.json`.
 - Local-only files kept out of git: `data-stacks/spark-on-eks/instructions.md` (detailed working log with real IDs),
   `cleanup-*.log`, `state-backup-*`.
 - All proxy/endpoint/subnet behaviour activates only when the corresponding config value is set, so these changes are

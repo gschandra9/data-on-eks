@@ -75,9 +75,14 @@ website/package.json
 .deploy-params.env
 # spark-on-eks VPC configs (account-specific VPC/subnet IDs)
 data-stacks/spark-on-eks/vpc*.json
+# ...except the masked sample config, which is committed
+!data-stacks/spark-on-eks/vpc.json
 # spark-on-eks cleanup.sh run logs and Terraform state backups (contain account/IAM identifiers)
 data-stacks/spark-on-eks/cleanup-*.log
 data-stacks/spark-on-eks/state-backup-*
 data-stacks/spark-on-eks/.cleanup.lock/
 # spark-on-eks environment-specific working notes (account, VPC, subnet and endpoint IDs)
 data-stacks/spark-on-eks/instructions.md
+# spark-on-eks test-VPC helper scripts (local only)
+data-stacks/spark-on-eks/create-vpc.sh
+data-stacks/spark-on-eks/delete-vpc.sh
