@@ -1,0 +1,22 @@
+{
+  "vpc_id": "vpc-0123456789abcdef0",
+  "vpc_name": "example-vpc",
+  "create_interface_endpoints": "auto",
+  "update_s3_endpoint_policy": true,
+  "node_http_proxy": "http://proxy.example.internal:3128",
+  "public_subnets": [
+    { "id": "subnet-0aaaaaaaaaaaaaaa1", "name": "example-vpc-public-a" },
+    { "id": "subnet-0aaaaaaaaaaaaaaa2", "name": "example-vpc-public-b" },
+    { "id": "subnet-0aaaaaaaaaaaaaaa3", "name": "example-vpc-public-c" }
+  ],
+  "private_subnets": [
+    { "id": "subnet-0bbbbbbbbbbbbbbb1", "name": "example-vpc-private-a" },
+    { "id": "subnet-0bbbbbbbbbbbbbbb2", "name": "example-vpc-private-b" },
+    { "id": "subnet-0bbbbbbbbbbbbbbb3", "name": "example-vpc-private-c" }
+  ],
+  "node_subnets": [
+    { "id": "subnet-0bbbbbbbbbbbbbbb1", "name": "example-vpc-private-a" },
+    { "id": "subnet-0bbbbbbbbbbbbbbb2", "name": "example-vpc-private-b" },
+    { "id": "subnet-0bbbbbbbbbbbbbbb3", "name": "example-vpc-private-c" }
+  ]
+}
