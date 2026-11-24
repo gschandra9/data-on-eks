@@ -48,11 +48,13 @@ locals {
       partition   = local.partition
       account_id  = local.account_id
       description = "EKS Core node group for hosting system add-ons"
-      subnet_ids   = local.node_subnet_ids
-      ami_type     = "AL2023_x86_64_STANDARD"
-      min_size     = 4
-      max_size     = 8
-      desired_size = 4
+      subnet_ids  = local.node_subnet_ids
+      ami_type    = "AL2023_x86_64_STANDARD"
+      # Proxy drop-ins for containerd/kubelet (empty list when node_http_proxy is unset, see node-proxy.tf)
+      cloudinit_pre_nodeadm = local.node_proxy_cloudinit
+      min_size              = 4
+      max_size              = 8
+      desired_size          = 4
 
       instance_types = ["m6a.xlarge"]
 

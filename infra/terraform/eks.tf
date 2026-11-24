@@ -126,9 +126,11 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   create_namespace = true
 
-  values = [
-    templatefile("${path.module}/helm-values/argocd.yaml", {})
-  ]
+  values = concat(
+    [templatefile("${path.module}/helm-values/argocd.yaml", {})],
+    # repo-server fetches Git / Helm / OCI sources from the internet, pods don't inherit the node proxy
+    local.node_proxy_enabled ? [yamlencode({ repoServer = { env = local.pod_proxy_env } })] : []
+  )
 
   depends_on = [aws_eks_addon.aws_ebs_csi_driver]
 }

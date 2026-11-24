@@ -199,6 +199,17 @@ variable "enable_karpenter_static_capacity" {
   default     = false
 }
 
+variable "node_http_proxy" {
+  description = "HTTP proxy URL for node traffic to the internet (e.g. http://proxy.example.local:3128). Empty: no proxy. Set by deploy.sh from node_http_proxy in --vpc-config."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.node_http_proxy == "" || can(regex("^https?://[A-Za-z0-9._-]+(:[0-9]+)?$", var.node_http_proxy))
+    error_message = "node_http_proxy must look like http://host[:port] (no credentials or path)."
+  }
+}
+
 variable "enable_ipv6" {
   description = "Enable IPv6 for the EKS cluster and its components"
   type        = bool

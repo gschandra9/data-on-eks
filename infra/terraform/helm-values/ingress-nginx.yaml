@@ -13,6 +13,10 @@ controller:
 # service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*" # DONT USE THIS EVER WHEN YOU USE IP based routing
       service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
       service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: 'true'
+%{ if length(internal_lb_subnets) > 0 ~}
+      # Explicit subnets (existing VPC without the kubernetes.io/role/internal-elb subnet tag)
+      service.beta.kubernetes.io/aws-load-balancer-subnets: ${join(",", internal_lb_subnets)}
+%{ endif ~}
 
 
 #------------------------------------

@@ -3,6 +3,11 @@ data "aws_availability_zones" "available" {}
 locals {
   azs = slice(data.aws_availability_zones.available.names, 0, 3)
 
+  # Subnets for internal load balancers, passed to the AWS Load Balancer Controller explicitly.
+  # Empty: the controller discovers them by the kubernetes.io/role/internal-elb tag (set on the
+  # private subnets below). Stacks that deploy into an existing, untagged VPC override this.
+  internal_lb_subnet_ids = []
+
   # Subnets for the EKS control plane ENIs, core node group and Karpenter nodes:
   # the private subnets carved from var.secondary_cidrs.
   node_subnet_ids = [

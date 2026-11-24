@@ -29,6 +29,28 @@ variable "create_s3express_endpoint" {
   default     = null
 }
 
+# Set by deploy.sh (existing mode, create_interface_endpoints in --vpc-config): interface endpoint
+# services to create so nodes without a NAT route can reach AWS APIs. Names are service suffixes,
+# e.g. "ec2", "ecr.api". Empty: create none.
+variable "create_interface_endpoints" {
+  description = "Interface VPC endpoint services to create in the node subnets (empty: none)"
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition     = alltrue([for s in var.create_interface_endpoints : contains(["ec2", "ecr.api", "ecr.dkr", "sts", "eks", "eks-auth", "logs", "sqs", "ssm", "elasticloadbalancing"], s)])
+    error_message = "Supported services: ec2, ecr.api, ecr.dkr, sts, eks, eks-auth, logs, sqs, ssm, elasticloadbalancing."
+  }
+}
+
+# Set by deploy.sh (existing mode, update_s3_endpoint_policy in --vpc-config): IDs of the VPC's
+# existing S3 endpoints whose policy gets a statement allowing the ECR image-layer bucket.
+variable "s3_endpoint_policy_ids" {
+  description = "Existing S3 VPC endpoint IDs to extend with an ECR image-layer bucket statement (empty: none)"
+  type        = list(string)
+  default     = []
+}
+
 #---------------------------------------------------------------
 # create mode
 #---------------------------------------------------------------

@@ -3,6 +3,11 @@ kind: Application
 metadata:
   name: spark-history-server
   namespace: argocd
+  annotations:
+    # Let the API server compute the diff (dry-run apply). Kubernetes 1.37 fills in StatefulSet defaults
+    # (e.g. updateStrategy.rollingUpdate.maxUnavailable, persistentVolumeClaimRetentionPolicy) that Argo CD's
+    # client-side diff does not know, which showed the app as OutOfSync although nothing differed.
+    argocd.argoproj.io/compare-options: ServerSideDiff=true
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

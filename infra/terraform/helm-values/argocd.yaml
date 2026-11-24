@@ -9,6 +9,9 @@ configs:
        jqPathExpressions:
         - .spec.volumeClaimTemplates[] | select(.kind == "PersistentVolumeClaim") | .apiVersion
         - .spec.volumeClaimTemplates[] | select(.kind == "PersistentVolumeClaim") | .kind
+        # Also filled in by the API server: an empty status and the default volumeMode
+        - .spec.volumeClaimTemplates[] | select(.kind == "PersistentVolumeClaim") | .status
+        - .spec.volumeClaimTemplates[] | select(.kind == "PersistentVolumeClaim") | .spec.volumeMode | select(. == "Filesystem")
     resource.compareoptions: |
       ignoreAggregatedRoles: true
       ignoreDifferences:

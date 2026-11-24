@@ -1,6 +1,7 @@
 locals {
   ingress_nginx_values = templatefile("${path.module}/helm-values/ingress-nginx.yaml", {
-    enable_ipv6 = var.enable_ipv6
+    enable_ipv6         = var.enable_ipv6
+    internal_lb_subnets = local.internal_lb_subnet_ids
   })
 }
 

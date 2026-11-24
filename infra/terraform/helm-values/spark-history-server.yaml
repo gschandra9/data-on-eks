@@ -21,6 +21,9 @@ sparkConf: |-
   spark.hadoop.fs.s3a.max.total.tasks=100
   spark.hadoop.fs.s3a.connection.establish.timeout=10000
   spark.hadoop.fs.s3a.connection.timeout=20000
+  # Use the regional S3 endpoint. Without a region S3A goes to the global s3.amazonaws.com, which is not
+  # reachable from VPCs without direct internet access (the call times out and the server exits).
+  spark.hadoop.fs.s3a.endpoint.region=${region}
   # Show up to 10000 jobs and stages in the UI
   spark.ui.retainedJobs=10000
   spark.ui.retainedStages=10000

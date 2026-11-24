@@ -13,6 +13,8 @@ locals {
       CLUSTER_NAME                 = local.name
       KARPENTER_NODE_IAM_ROLE_NAME = module.karpenter.node_iam_role_name
       NODE_SUBNET_IDS              = local.node_subnet_ids
+      NODE_HTTP_PROXY              = var.node_http_proxy
+      NODE_PROXY_SCRIPT            = local.node_proxy_script
     })
   )
 }
@@ -50,10 +52,12 @@ resource "helm_release" "karpenter" {
   create_namespace = true
   repository       = "oci://public.ecr.aws/karpenter"
   chart            = "karpenter"
-  version          = "1.9.0"
-  wait             = true
+  # 1.15.x is the only Karpenter line that supports Kubernetes 1.37 (eks_cluster_version default).
+  # See https://karpenter.sh/docs/upgrading/compatibility/
+  version = "1.15.3"
+  wait    = true
 
-  values = [
+  values = concat([
     <<-EOT
     nodeSelector:
       NodeGroupType: 'core'
@@ -72,7 +76,11 @@ resource "helm_release" "karpenter" {
     webhook:
       enabled: false
     EOT
-  ]
+    ],
+    # The controller pod does not inherit the node proxy: it needs it for IAM (no VPC endpoint)
+    # and other AWS calls without an endpoint. Endpoint-backed services bypass it (NO_PROXY).
+    local.node_proxy_enabled ? [yamlencode({ controller = { env = local.pod_proxy_env } })] : []
+  )
 
   depends_on = [module.karpenter]
 }

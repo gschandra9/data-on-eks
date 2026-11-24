@@ -4,8 +4,19 @@
 data "aws_availability_zones" "available" {}
 
 locals {
-  azs             = module.vpc.azs
-  node_subnet_ids = module.vpc.node_subnets
+  azs = module.vpc.azs
+
+  # Existing VPC: its subnets don't carry the kubernetes.io/role/internal-elb tag (and are not
+  # modified), so internal load balancers (ingress-nginx NLB) get the private subnet IDs directly.
+  # Created VPC: the subnets are tagged, the controller discovers them.
+  internal_lb_subnet_ids = var.vpc_mode == "existing" ? module.vpc.private_subnets : []
+  # The filter condition is always true. It makes module.eks (core node group) and Karpenter
+  # wait for module.vpc_endpoints, so the endpoints exist before the first node boots
+  # (install.sh applies -target=module.eks before the final full apply).
+  node_subnet_ids = [
+    for s in module.vpc.node_subnets : s
+    if length(module.vpc_endpoints) >= 0 && length(aws_vpc_endpoint_policy.ecr_layers) >= 0
+  ]
 
   # S3 endpoints: deploy.sh decides per endpoint (missing in the VPC -> create).
   # Without deploy.sh: create in create mode, skip in existing mode.
@@ -45,6 +56,39 @@ module "vpc" {
 #---------------------------------------------------------------
 # VPC Endpoints
 #---------------------------------------------------------------
+
+# ECR serves image layers from an AWS-owned S3 bucket. An existing S3 endpoint whose policy only
+# allows other buckets answers 403 and the CNI/kube-proxy images can't be pulled. Keep the
+# endpoint's current statements and add one for the layer bucket (idempotent: replaced by Sid).
+# Destroying this resource resets the endpoint policy to the AWS default (full access).
+data "aws_vpc_endpoint" "existing_s3" {
+  for_each = toset(var.s3_endpoint_policy_ids)
+  id       = each.value
+}
+
+locals {
+  ecr_layers_statement = {
+    Sid       = "AllowEcrImageLayers"
+    Effect    = "Allow"
+    Principal = "*"
+    Action    = "s3:GetObject"
+    Resource  = "arn:aws:s3:::prod-${var.region}-starport-layer-bucket/*"
+  }
+}
+
+resource "aws_vpc_endpoint_policy" "ecr_layers" {
+  for_each        = toset(var.s3_endpoint_policy_ids)
+  vpc_endpoint_id = each.value
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = concat(
+      [for st in flatten([jsondecode(data.aws_vpc_endpoint.existing_s3[each.value].policy).Statement]) : st if try(st.Sid, "") != local.ecr_layers_statement.Sid],
+      [local.ecr_layers_statement]
+    )
+  })
+}
+
 resource "aws_security_group" "vpc_endpoint_s3" {
   count = local.create_s3_endpoint ? 1 : 0
 
@@ -90,22 +134,58 @@ resource "aws_security_group" "vpc_endpoint_s3" {
   }
 }
 
+# Interface endpoints for AWS APIs the nodes need to join the cluster and run add-ons
+# (only when deploy.sh found them missing in an existing VPC without NAT access).
+resource "aws_security_group" "vpc_endpoint_interface" {
+  count = length(var.create_interface_endpoints) > 0 ? 1 : 0
+
+  name_prefix = "${var.name}-vpc-endpoint-api"
+  description = "HTTPS from the VPC to interface VPC endpoints"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = module.vpc.vpc_cidr_blocks
+  }
+
+  tags = {
+    Name = "${var.name}-vpc-endpoint-api"
+  }
+}
+
 module "vpc_endpoints" {
-  count  = local.create_s3_endpoint || local.create_s3express_endpoint ? 1 : 0
+  count  = local.create_s3_endpoint || local.create_s3express_endpoint || length(var.create_interface_endpoints) > 0 ? 1 : 0
   source = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
 
   vpc_id = module.vpc.vpc_id
 
   # Keep only the endpoints that should be created
-  endpoints = { for k, v in local.vpc_endpoints : k => v if local.vpc_endpoint_enabled[k] }
+  endpoints = merge(
+    { for k, v in local.vpc_endpoints : k => v if local.vpc_endpoint_enabled[k] },
+    local.interface_endpoints
+  )
 
-  # deploy.sh relies on this Name tag to tell this deployment's endpoints from pre-existing ones
+  # deploy.sh / cleanup.sh use this tag to tell this deployment's endpoints from pre-existing ones.
+  # (The module overwrites the Name tag with the endpoint key, so Name can't be used for this.)
   tags = {
-    Name = "${var.name}-vpc-endpoints"
+    "data-on-eks:deployment" = var.name
   }
 }
 
 locals {
+  # One interface endpoint per requested service, in the node subnets (the AZs where nodes run)
+  interface_endpoints = {
+    for s in var.create_interface_endpoints : replace(s, ".", "_") => {
+      service             = s
+      subnet_ids          = module.vpc.node_subnets
+      security_group_ids  = [aws_security_group.vpc_endpoint_interface[0].id]
+      private_dns_enabled = true
+      # No per-endpoint tags: the module-level "data-on-eks:deployment" tag marks these endpoints.
+    }
+  }
+
   vpc_endpoint_enabled = {
     s3        = local.create_s3_endpoint
     s3express = local.create_s3express_endpoint

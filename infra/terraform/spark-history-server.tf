@@ -6,7 +6,8 @@ locals {
     {
       s3_bucket_name            = module.s3_bucket.s3_bucket_id,
       event_log_prefix          = aws_s3_object.this.key,
-      spark_history_server_role = module.spark_history_server_irsa.arn
+      spark_history_server_role = module.spark_history_server_irsa.arn,
+      region                    = local.region
     })
   )
 }

@@ -67,6 +67,12 @@ spec:
     chown -R 185:185 /mnt/spark-local
     chmod 755 /mnt/spark-local
 
+%{ if NODE_HTTP_PROXY != "" ~}
+    --//
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    ${indent(4, NODE_PROXY_SCRIPT)}
+%{ endif ~}
     --//--
 
 ---
@@ -151,6 +157,12 @@ spec:
           registryPullQPS: 50
           registryBurst: 100
 
+%{ if NODE_HTTP_PROXY != "" ~}
+    --//
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    ${indent(4, NODE_PROXY_SCRIPT)}
+%{ endif ~}
     --//--
 
 ---
@@ -287,6 +299,12 @@ spec:
       /usr/bin/chown -hR +999:+1000 /mnt/k8s-disks
     fi
 
+%{ if NODE_HTTP_PROXY != "" ~}
+    --//
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    ${indent(4, NODE_PROXY_SCRIPT)}
+%{ endif ~}
     --//--
 
 ---
@@ -349,6 +367,12 @@ spec:
           # 0.9 is the kubernetes default. memory.high = request + 0.9 * (limit - request)
           memoryThrottlingFactor: 0.9
 
+%{ if NODE_HTTP_PROXY != "" ~}
+    --//
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    ${indent(4, NODE_PROXY_SCRIPT)}
+%{ endif ~}
     --//--
 
 ---
@@ -412,6 +436,12 @@ spec:
           # memory.high = request + 0.7 * (limit - request)
           memoryThrottlingFactor: 0.7
 
+%{ if NODE_HTTP_PROXY != "" ~}
+    --//
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    ${indent(4, NODE_PROXY_SCRIPT)}
+%{ endif ~}
     --//--
 
 ---
@@ -503,6 +533,12 @@ spec:
           systemReserved:
             cpu: 1000m
 
+%{ if NODE_HTTP_PROXY != "" ~}
+    --//
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    ${indent(4, NODE_PROXY_SCRIPT)}
+%{ endif ~}
     --//--
 
 ---
@@ -582,6 +618,12 @@ spec:
     echo 'net.ipv4.tcp_slow_start_after_idle=0' >> /etc/sysctl.conf
     sysctl -p
 
+%{ if NODE_HTTP_PROXY != "" ~}
+    --//
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    ${indent(4, NODE_PROXY_SCRIPT)}
+%{ endif ~}
     --//--
 
   tags:
@@ -657,4 +699,10 @@ spec:
 
     udevadm control --reload && udevadm trigger
 
+%{ if NODE_HTTP_PROXY != "" ~}
+    --//
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    ${indent(4, NODE_PROXY_SCRIPT)}
+%{ endif ~}
     --//--

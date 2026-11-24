@@ -1,5 +1,5 @@
 locals {
-  kube_prometheus_values = templatefile("${path.module}/helm-values/kube-prometheus.yaml", {
+  kube_prometheus_values_base = templatefile("${path.module}/helm-values/kube-prometheus.yaml", {
     # Add template variables if needed for AMP integration
     region              = local.region
     amp_sa              = local.amp_ingest_service_account
@@ -7,6 +7,25 @@ locals {
     amp_url             = var.enable_amazon_prometheus ? "https://aps-workspaces.${local.region}.amazonaws.com/workspaces/${aws_prometheus_workspace.amp[0].id}" : ""
     clickhouse_password = random_password.clickhouse.result
   })
+
+  # With node_http_proxy set, Grafana needs the proxy: the download-dashboards init container fetches
+  # dashboards from raw.githubusercontent.com and the grafana container installs plugins from grafana.com.
+  # Its data sources use short in-cluster names (<svc>.monitoring), so those namespaces bypass the proxy.
+  grafana_no_proxy = "${local.node_no_proxy},.monitoring,.logging"
+  grafana_proxy_env = {
+    HTTP_PROXY  = var.node_http_proxy
+    HTTPS_PROXY = var.node_http_proxy
+    NO_PROXY    = local.grafana_no_proxy
+  }
+  kube_prometheus_values = local.node_proxy_enabled ? yamlencode(merge(
+    yamldecode(local.kube_prometheus_values_base),
+    {
+      grafana = merge(yamldecode(local.kube_prometheus_values_base).grafana, {
+        env                = local.grafana_proxy_env
+        downloadDashboards = { env = local.grafana_proxy_env }
+      })
+    }
+  )) : local.kube_prometheus_values_base
 }
 
 #---------------------------------------------------------------
